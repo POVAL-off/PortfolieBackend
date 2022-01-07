@@ -1,25 +1,32 @@
 import "reflect-metadata";
+import * as dotenv from 'dotenv'
 import {ApolloServer} from "apollo-server-express";
 import * as Express from "express";
-import {buildSchema, Resolver, Query} from "type-graphql";
+import {buildSchema} from "type-graphql";
 import {Application, Request, Response} from "express";
+import {ConnectOptions} from "mongoose";
+import * as mongoose from "mongoose";
 
-@Resolver()
-class HelloResolver {
-    @Query(() => String)
-    async helloWorld() {
-        return "Hello World!";
-    }
-}
+dotenv.config()
+
+const {PORT, MONGODB_URI} = process.env;
+
+const app: Application = Express();
+
+const mongoConnectOptions = {
+    useNewUrlParser: true
+} as ConnectOptions;
 
 const main = async () => {
     const schema = await buildSchema({
-        resolvers: [HelloResolver]
+        resolvers: [__dirname + "/resolvers/**/*.ts"]
     });
+
 
     const apolloServer = new ApolloServer({schema});
 
-    const app: Application = Express();
+    await mongoose.connect(MONGODB_URI as string, mongoConnectOptions)
+    console.log('💾 MongoDB has been connected')
 
     await apolloServer.start()
     console.log('🟣 Apollo server has been started')
@@ -28,8 +35,8 @@ const main = async () => {
         app.get('/', (_req: Request, res: Response) => res.send('GraphQL API'))
         apolloServer.applyMiddleware({app});
 
-        app.listen(4000, () => {
-            console.log("server started on http://localhost:4000/graphql");
+        app.listen(PORT, () => {
+            console.log(`server started on http://localhost:${PORT}/graphql`);
         });
     } catch (err) {
         console.log(`❌ Error: \n ${err}`)
