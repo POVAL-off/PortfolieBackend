@@ -9,6 +9,11 @@ export class SkillResolver {
         return SkillModel.find();
     }
 
+    @Query(() => Skill)
+    async getSkill(@Arg("id") _id: string) {
+        return SkillModel.findById(_id);
+    }
+
     @Mutation(() => Skill)
     async addSkill(@Args() args: AddSkill) {
         return SkillModel.create(args);
@@ -21,7 +26,6 @@ export class SkillResolver {
 
     @Mutation(() => Skill)
     async editSkill(@Arg("id") _id: string, @Arg("skill") skill: AddSkill) {
-        console.log(skill);
-        return SkillModel.findByIdAndUpdate(_id)
+        return SkillModel.findByIdAndUpdate(_id, skill)
     }
 }

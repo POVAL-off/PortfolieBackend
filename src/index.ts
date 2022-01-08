@@ -6,6 +6,7 @@ import {buildSchema} from "type-graphql";
 import {Application, Request, Response} from "express";
 import {ConnectOptions} from "mongoose";
 import * as mongoose from "mongoose";
+import { graphqlUploadExpress } from 'graphql-upload';
 
 dotenv.config()
 
@@ -13,13 +14,16 @@ const {PORT, MONGODB_URI} = process.env;
 
 const app: Application = Express();
 
+app.use(graphqlUploadExpress());
+
 const mongoConnectOptions = {
     useNewUrlParser: true
 } as ConnectOptions;
 
 const main = async () => {
     const schema = await buildSchema({
-        resolvers: [__dirname + "/resolvers/**/*.ts"]
+        resolvers: [__dirname + "/resolvers/**/*.ts"],
+        dateScalarMode: 'isoDate'
     });
 
 
