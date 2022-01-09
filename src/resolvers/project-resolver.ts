@@ -1,5 +1,6 @@
-import {Arg, Args, ID, Mutation, Query, Resolver} from "type-graphql";
+import {Arg, Args, Mutation, Query, Resolver} from "type-graphql";
 import {InputProject, Project, ProjectModel} from "../entities/Project";
+import {FileService} from "../sevices/file-service";
 
 @Resolver()
 export class ProjectResolver {
@@ -11,18 +12,12 @@ export class ProjectResolver {
 
     @Query(() => Project)
     async getProject(@Arg("id") _id: string) {
-        const project = await ProjectModel.findById(_id);
-
-        if (!project) {
-            throw new Error('Project is not found');
-        }
-
-        return project;
+        return ProjectModel.findById(_id);
     }
 
     @Mutation(() => Project)
-    async addProject(@Args() args: InputProject) {
-        return ProjectModel.create(args);
+    async addProject(@Args() { image, ...args }: InputProject) {
+        return ProjectModel.create({...args, image: image ? await FileService.saveFile(image as any) : null});
     }
 
     @Mutation(() => Project)
@@ -36,7 +31,7 @@ export class ProjectResolver {
     }
 
     @Mutation(() => Project)
-    async addSkillsToProject(@Arg("id") _id: string, @Arg("skillsId", returns => [String]) skillsId: string[]) {
+    async addSkillsToProject(@Arg("id") _id: string, @Arg("skillsId", () => [String]) skillsId: string[]) {
         return ProjectModel.findByIdAndUpdate(_id, {
             $push: {
                 stack: {
@@ -47,7 +42,7 @@ export class ProjectResolver {
     }
 
     @Mutation(() => Project)
-    async removeSkillsInProject(@Arg("id") _id: string, @Arg("skillsId", returns => [String]) skillsId: string[]) {
+    async removeSkillsInProject(@Arg("id") _id: string, @Arg("skillsId", () => [String]) skillsId: string[]) {
         return ProjectModel.findByIdAndUpdate(_id, {
             $pullAll: {
                 stack: skillsId

@@ -1,5 +1,6 @@
 import {Arg, Args, Mutation, Query, Resolver} from "type-graphql";
 import {AddSkill, Skill, SkillModel} from "../entities/skill";
+import {FileService} from "../sevices/file-service";
 
 @Resolver()
 export class SkillResolver {
@@ -15,8 +16,8 @@ export class SkillResolver {
     }
 
     @Mutation(() => Skill)
-    async addSkill(@Args() args: AddSkill) {
-        return SkillModel.create(args);
+    async addSkill(@Args() { image, ...args }: AddSkill) {
+        return SkillModel.create({...args, image: image ? await FileService.saveFile(image as any) : null});
     }
 
     @Mutation(() => Skill)

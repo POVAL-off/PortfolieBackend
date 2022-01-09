@@ -2,6 +2,7 @@ import {ArgsType, Field, Float, ID, InputType, ObjectType} from "type-graphql";
 import {Typegoose} from "typegoose";
 import {Status} from "./enum-status";
 import {column} from "../untils/decorator/column";
+import {GraphQLUpload} from "graphql-upload";
 
 
 @ObjectType()
@@ -59,4 +60,7 @@ export class InputProject extends Typegoose {
 
     @Field(() => [ID], { nullable: true} )
     stack: [String]
+
+    @Field(() => GraphQLUpload, { nullable: true })
+    image: typeof GraphQLUpload;
 }

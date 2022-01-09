@@ -7,6 +7,7 @@ import {Application, Request, Response} from "express";
 import {ConnectOptions} from "mongoose";
 import * as mongoose from "mongoose";
 import { graphqlUploadExpress } from 'graphql-upload';
+import * as path from "path";
 
 dotenv.config()
 
@@ -15,6 +16,7 @@ const {PORT, MONGODB_URI} = process.env;
 const app: Application = Express();
 
 app.use(graphqlUploadExpress());
+app.use(Express.static(path.resolve(__dirname, 'static')))
 
 const mongoConnectOptions = {
     useNewUrlParser: true

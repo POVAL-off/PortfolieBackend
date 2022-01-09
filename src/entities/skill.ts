@@ -3,6 +3,7 @@ import {Typegoose} from "typegoose";
 import {Length} from "class-validator";
 import {Status} from "./enum-status";
 import {column} from "../untils/decorator/column";
+import {GraphQLUpload} from "graphql-upload";
 
 @ObjectType()
 export class Skill extends Typegoose {
@@ -23,6 +24,9 @@ export class Skill extends Typegoose {
 
     @column({enum: Status}, () => Status)
     status: Status;
+
+    @column()
+    image: string;
 }
 
 export const SkillModel = new Skill().getModelForClass<typeof Skill>(Skill);
@@ -45,4 +49,7 @@ export class AddSkill extends Typegoose {
 
     @Field(() => Status, {nullable: true, defaultValue: Status.ACTIVE})
     status: Status;
+
+    @Field(() => GraphQLUpload, { nullable: true })
+    image: typeof GraphQLUpload;
 }
