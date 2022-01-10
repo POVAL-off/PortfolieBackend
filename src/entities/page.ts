@@ -14,9 +14,6 @@ export class Page extends Typegoose {
     @column()
     link: string;
 
-    @column()
-    icon: string;
-
     @column({enum: Status}, () => Status)
     status: Status;
 }
