@@ -1,5 +1,6 @@
-import {Arg, Args, Mutation, Query, Resolver} from "type-graphql";
+import {Arg, Args, Authorized, Mutation, Query, Resolver} from "type-graphql";
 import {InputPage, Page, PageModel} from "../entities/page";
+import {Role} from "../entities/enum-roles";
 
 @Resolver()
 export class PageResolver {
@@ -14,16 +15,19 @@ export class PageResolver {
         return PageModel.findById(_id);
     }
 
+    @Authorized(Role.ADMIN)
     @Mutation(() => Page)
     async addPage(@Args() args: InputPage) {
         return PageModel.create(args);
     }
 
+    @Authorized(Role.ADMIN)
     @Mutation(() => Page)
     async removePage(@Arg("id") _id: string) {
         return PageModel.findByIdAndRemove(_id)
     }
 
+    @Authorized(Role.ADMIN)
     @Mutation(() => Page)
     async editPage(@Arg("id") _id: string, @Arg("Page") Page: InputPage) {
         return PageModel.findByIdAndUpdate(_id, Page)

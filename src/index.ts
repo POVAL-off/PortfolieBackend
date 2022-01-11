@@ -8,6 +8,9 @@ import {ConnectOptions} from "mongoose";
 import * as mongoose from "mongoose";
 import { graphqlUploadExpress } from 'graphql-upload';
 import * as path from "path";
+import * as session from "express-session";
+import * as cors from 'cors';
+import {customAuthChecker} from "./middlewares/role-middleware";
 
 dotenv.config()
 
@@ -15,8 +18,28 @@ const {PORT, MONGODB_URI} = process.env;
 
 const app: Application = Express();
 
+app.set('trust proxy', 1);
+
+app.use(cors({
+    origin: "https://studio.apollographql.com",
+    credentials: true
+}))
 app.use(graphqlUploadExpress());
 app.use(Express.static(path.resolve(__dirname, 'static')))
+app.use(
+    session({
+        name: "qid",
+        secret: "aslkdfjoiq12312",
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            httpOnly: true,
+            secure: true,
+            maxAge: 1000 * 60 * 60 * 24 * 14,
+            sameSite: "none"
+        }
+    })
+);
 
 const mongoConnectOptions = {
     useNewUrlParser: true
@@ -25,11 +48,11 @@ const mongoConnectOptions = {
 const main = async () => {
     const schema = await buildSchema({
         resolvers: [__dirname + "/resolvers/**/*.ts"],
-        dateScalarMode: 'isoDate'
+        dateScalarMode: 'isoDate',
+        authChecker: customAuthChecker
     });
 
-
-    const apolloServer = new ApolloServer({schema});
+    const apolloServer = new ApolloServer({schema, context: ({ req }: any) => ({ req })});
 
     await mongoose.connect(MONGODB_URI as string, mongoConnectOptions)
     console.log('💾 MongoDB has been connected')
@@ -39,7 +62,7 @@ const main = async () => {
 
     try {
         app.get('/', (_req: Request, res: Response) => res.send('GraphQL API'))
-        apolloServer.applyMiddleware({app});
+        apolloServer.applyMiddleware({app, cors: { origin: 'https://studio.apollographql.com', credentials: true }});
 
         app.listen(PORT, () => {
             console.log(`server started on http://localhost:${PORT}/graphql`);
