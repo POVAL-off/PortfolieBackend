@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import * as dotenv from 'dotenv'
-import {ApolloServer} from "apollo-server-express";
+import {ApolloServer, CorsOptions} from "apollo-server-express";
 import * as Express from "express";
 import {buildSchema} from "type-graphql";
 import {Application, Request, Response} from "express";
@@ -12,6 +12,8 @@ import * as session from "express-session";
 import * as cors from 'cors';
 import {customAuthChecker} from "./middlewares/role-middleware";
 
+const sessionStore = new session.MemoryStore();
+
 dotenv.config()
 
 const {PORT, MONGODB_URI} = process.env;
@@ -20,15 +22,18 @@ const app: Application = Express();
 
 app.set('trust proxy', 1);
 
-app.use(cors({
-    origin: "https://studio.apollographql.com",
+const corsSettings: CorsOptions = {
+    origin: ["https://studio.apollographql.com", "http://localhost:3000"],
     credentials: true
-}))
+}
+
+app.use(cors(corsSettings))
 app.use(graphqlUploadExpress());
 app.use(Express.static(path.resolve(__dirname, 'static')))
 app.use(
     session({
-        name: "qid",
+        store: sessionStore,
+        name: "token",
         secret: "aslkdfjoiq12312",
         resave: false,
         saveUninitialized: true,
@@ -62,7 +67,7 @@ const main = async () => {
 
     try {
         app.get('/', (_req: Request, res: Response) => res.send('GraphQL API'))
-        apolloServer.applyMiddleware({app, cors: { origin: 'https://studio.apollographql.com', credentials: true }});
+        apolloServer.applyMiddleware({app, cors: corsSettings});
 
         app.listen(PORT, () => {
             console.log(`server started on http://localhost:${PORT}/graphql`);

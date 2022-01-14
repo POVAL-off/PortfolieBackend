@@ -2,6 +2,7 @@ import {Args, Ctx, Mutation, Query, Resolver} from "type-graphql";
 import {RegisterUser, User, UserModel} from "../entities/user";
 import * as bcrypt from 'bcrypt';
 import {ICookie, MyContext} from "../types/my-context";
+ import {getCookie} from "../untils/getCookie";
 
 @Resolver()
 export class UserResolver {
@@ -56,10 +57,12 @@ export class UserResolver {
 
     @Query(() => User)
     async me(@Ctx() ctx: MyContext) {
-        if (!(ctx.req.session as ICookie).userId) {
+        const userId = getCookie(ctx, 'userId')
+
+        if (!userId) {
             return null;
         }
 
-        return UserModel.findById((ctx.req.session as ICookie)!.userId)
+        return UserModel.findById(userId)
     }
 }

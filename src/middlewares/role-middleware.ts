@@ -1,12 +1,12 @@
-import {ICookie, MyContext} from "../types/my-context";
+import {MyContext} from "../types/my-context";
 import {AuthChecker} from "type-graphql";
-import {Session} from "express-session";
 import {UserModel} from "../entities/user";
+import {getCookie} from "../untils/getCookie";
 
 export const customAuthChecker: AuthChecker<MyContext> = async ({ context }, roles: string[]) => {
-    const userId = (context.req.session as Session & ICookie).userId;
+    const userId = getCookie(context, "userId");
 
-    if (!roles.length) {
+    if (!roles.length && userId) {
         return true;
     }
 
